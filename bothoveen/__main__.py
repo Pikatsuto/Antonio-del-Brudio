@@ -1,5 +1,5 @@
 import logging
-from pika_girl_music import Bot
+from bothoveen import Bot
 
 logging.basicConfig(level=logging.DEBUG)
 
