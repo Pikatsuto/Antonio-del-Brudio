@@ -9,12 +9,12 @@ clean:
 	rm -rf *__pycache__
 
 $(VBIN):
+	pip install -e .
 	python -m venv venv
 	chmod +x venv/bin/activate
 	./venv/bin/activate
 
 start: $(VBIN)
-	pip install -e .
 	python pika_girl_music
 
 .PHONY: clean all start
