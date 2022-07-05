@@ -10,3 +10,7 @@ class Bot(commands.Bot):
 
     def run(self):
         super().run(self.config.pop("TOKEN"))
+
+    async def on_message(self, message):
+        print("Received message:", message)
+        await self.process_commands(message)
