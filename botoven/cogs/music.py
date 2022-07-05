@@ -39,7 +39,9 @@ class YTDLSource(nextcord.PCMVolumeTransformer):
     @classmethod
     async def from_url(cls, url, *, loop=None, stream=False):
         loop = loop or asyncio.get_event_loop()
-        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
+        data = await loop.run_in_executor(
+            None, lambda: ytdl.extract_info(url, download=not stream)
+        )
 
         if "entries" in data:
             # take first item from a playlist
@@ -57,7 +59,7 @@ class Music(commands.Cog):
     async def join(self, ctx, *, channel: nextcord.VoiceChannel):
         """Joins a voice channel"""
 
-        c:nextcord.VoiceChannel = self.bot.get_channel(993895918418006057)
+        c: nextcord.VoiceChannel = self.bot.get_channel(993895918418006057)
         print(dir(c))
         await c.connect()
 
@@ -66,7 +68,9 @@ class Music(commands.Cog):
         """Plays a file from the local filesystem"""
 
         source = nextcord.PCMVolumeTransformer(nextcord.FFmpegPCMAudio(query))
-        ctx.voice_client.play(source, after=lambda e: print(f"Player error: {e}") if e else None)
+        ctx.voice_client.play(
+            source, after=lambda e: print(f"Player error: {e}") if e else None
+        )
 
         await ctx.send(f"Now playing: {query}")
 
