@@ -15,10 +15,10 @@ $(VBIN)/python:
 	python -m venv venv
 	chmod +x venv/bin/activate
 	./venv/bin/activate
-	pip install -e .
 
 
 start: $(VBIN)/python
+	pip install -e .
 	python botoven
 
 
