@@ -1,6 +1,5 @@
 import asyncio
 import os
-import time
 
 import nextcord
 import youtube_dl
@@ -63,7 +62,29 @@ class Music(commands.Cog):
                 os.remove(file)
 
     @commands.command()
-    async def yt(self, ctx, *, url):
+    async def playlist(self, ctx, *, url):
+        ydl = youtube_dl.YoutubeDL({'outtmpl': '%(id)s%(ext)s', 'quiet': True, })
+        video = ""
+
+        with ydl:
+            result = ydl.extract_info(url, download=False, )  # We just want to extract the info
+
+            if 'entries' in result:
+                # Can be a playlist or a list of videos
+                video = result['entries']
+
+                # loops entries to grab each video_url
+                for i, item in enumerate(video):
+                    url = result['entries'][i]['webpage_url']
+                    print("test")
+                    await self.play_sound(url=url, ctx=ctx)
+                    await asyncio.sleep(int(result['entries'][i]["duration"]) +1)
+
+    @commands.command()
+    async def play(self, ctx, *, url):
+        await self.play_sound(url=url, ctx=ctx)
+
+    async def play_sound(self, ctx, url):
         """Plays from a URL (almost anything youtube_dl supports)"""
 
         async with ctx.typing():
@@ -91,7 +112,8 @@ class Music(commands.Cog):
         await ctx.voice_client.disconnect()
         self.rm_audio()
 
-    @yt.before_invoke
+    @play.before_invoke
+    @playlist.before_invoke
     async def ensure_voice(self, ctx):
         if ctx.voice_client is None:
             if ctx.author.voice:

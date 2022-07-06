@@ -2,7 +2,7 @@ import logging
 from botoven import Bot
 from botoven.cogs import Music, Dev, Info
 
-logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
 
 if __name__ == "__main__":
     bot = Bot()
