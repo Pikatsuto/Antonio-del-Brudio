@@ -1,5 +1,6 @@
 import asyncio
-from typing import Optional
+import os
+import time
 
 import nextcord
 import youtube_dl
@@ -56,76 +57,21 @@ class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
-    async def join(self, ctx, channel_id: Optional[int] = None):
-        """Joins a voice channel"""
-        if channel_id is None:
-            channel = ctx.author.voice.channel
-
-        else:
-            channel = self.bot.get_channel(channel_id)
-            if channel is None:
-                await ctx.send("Channel not found")
-                return
-
-        await channel.connect()
-        return
+    async def rm_audio(self):
+        for file in os.listdir("."):
+            if file.endswith("mp4.part"):
+                os.remove(file)
 
     @commands.command()
-    async def play(self, ctx, *, query, channel_id: Optional[int] = None):
-        """Plays a file from the local filesystem"""
-        await self.join(ctx, channel_id)
-
-        source = nextcord.PCMVolumeTransformer(nextcord.FFmpegPCMAudio(query))
-        ctx.voice_client.play(
-            source, after=lambda e: print(f"Player error: {e}") if e else None
-        )
-
-        await ctx.send(f"Now playing: {query}")
-
-    @commands.command()
-    async def yt(self, ctx, url, channel_id: Optional[int] = None):
+    async def yt(self, ctx, *, url):
         """Plays from a URL (almost anything youtube_dl supports)"""
-        if channel_id is None:
-            channel = ctx.author.voice.channel
-
-        else:
-            channel = self.bot.get_channel(channel_id)
-
-            if channel is None:
-                await ctx.send("Channel not found")
-                return
-
-        await ctx.voice_client.move_to(channel)
-        print(dir(ctx.voice_client))
-
-        player = await YTDLSource.from_url(url, loop=self.bot.loop)
-        ctx.voice_client.play(
-            player, after=lambda e: print(f"Player error: {e}") if e else None
-        )
-
-        await ctx.send(f"Now playing: {player.title}")
-
-    @commands.command()
-    async def stream(self, ctx, url, channel_id: Optional[int] = None):
-        """Streams from a URL (same as yt, but doesn't predownload)"""
-        if channel_id is None:
-            channel = ctx.author.voice.channel
-
-        else:
-            channel = self.bot.get_channel(channel_id)
-
-            if channel is None:
-                await ctx.send("Channel not found")
-                return
-
-        await ctx.voice_client.move_to(channel)
 
         async with ctx.typing():
             player = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
             ctx.voice_client.play(
                 player, after=lambda e: print(f"Player error: {e}") if e else None
             )
+            await self.rm_audio()
 
         await ctx.send(f"Now playing: {player.title}")
 
@@ -142,12 +88,10 @@ class Music(commands.Cog):
     @commands.command()
     async def stop(self, ctx):
         """Stops and disconnects the bot from voice"""
-
         await ctx.voice_client.disconnect()
+        self.rm_audio()
 
-    @play.before_invoke
     @yt.before_invoke
-    @stream.before_invoke
     async def ensure_voice(self, ctx):
         if ctx.voice_client is None:
             if ctx.author.voice:
